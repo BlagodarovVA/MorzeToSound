@@ -2,6 +2,7 @@
 javac -encoding UTF-8 main/java/Morze/*.java
 
 # 2. Создать manifest.txt (вручную, с пустой строкой в конце!)
+Main-Class: main.java.Morze.TonePlayerGUI
 
 # 3. Собрать JAR
 jar cfm MorzePlayer.jar manifest.txt main/java/Morze/*.class
