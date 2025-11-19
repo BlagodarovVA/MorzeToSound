@@ -10,21 +10,24 @@ import static main.java.Morze.MorzeDictionary.stringToMorze;
 
 public class TonePlayerGUI extends JFrame {
 
-    private static final int SAMPLE_RATE = 8000;
-    private static final int CHANNELS = 1;
-    private static final int FRAME_SIZE = 2; // 16-bit
+    private static final int SAMPLE_RATE = 8000;  // Гц
+    private static final int CHANNELS = 1;        // Моно
+    private static final int FRAME_SIZE = 2;      // байт на сэмпл (16 бит)
     private static final boolean SIGNED = true;
     private static final boolean BIG_ENDIAN = false;
 
     private final JTextField freqField;
     private final JTextField durationField;
     private final JTextArea textArea;
+    private volatile boolean stopRequested = false;
+    private SourceDataLine currentLine = null; // чтобы можно было прервать звук мгновенно
+    private Thread playbackThread = null;      // чтобы можно было отслеживать активное воспроизведение
 
+    // Внешний вид окна
     public TonePlayerGUI() {
         setTitle("Генератор морзянки");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-        setResizable(false); // чтобы окно нельзя было растягивать
 
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -66,99 +69,149 @@ public class TonePlayerGUI extends JFrame {
         JScrollPane scrollPane = new JScrollPane(textArea); // Добавляем прокрутку
         add(scrollPane, gbc);
 
-        // === Кнопка ===
+        // === Кнопка "Воспроизвести" ===
         gbc.gridx = 0; gbc.gridy = 3;
-        gbc.gridwidth = 2;                                  // занимает оба столбца
+        gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.CENTER;
         gbc.fill = GridBagConstraints.NONE;
         gbc.weightx = 0;
-        JButton playButton = new JButton("Воспроизвести");
+        JButton playButton = new JButton("Старт");
         playButton.addActionListener(new PlayButtonListener());
         add(playButton, gbc);
 
-        pack(); // автоматически подбирает оптимальный размер окна
-        //setSize(getWidth() * 2, getHeight() * 2); // затем удвоить
-        setResizable(true); // разрешить изменение размера (опционально)
+        // === Кнопка "Прервать" ===
+        gbc.gridy = 4;
+        JButton stopButton = new JButton("Стоп");
+        stopButton.addActionListener(new StopButtonListener());
+        add(stopButton, gbc);
+
+        pack();                 // автоматически подбирает оптимальный размер окна
+        setResizable(true);     // чтобы окно нельзя было растягивать
     }
 
     private class PlayButtonListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            try {
-                double frequency = Double.parseDouble(freqField.getText());
-                int duration = Integer.parseInt(durationField.getText());
-                String text = textArea.getText().toUpperCase();
+            // Если уже идёт воспроизведение — игнорируем повторный запуск
+            if (playbackThread != null && playbackThread.isAlive()) {
+                JOptionPane.showMessageDialog(
+                        TonePlayerGUI.this,
+                        "Воспроизведение уже идёт",
+                        "Информация",
+                        JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
 
-                if (frequency <= 0 || duration <= 0) {
-                    JOptionPane.showMessageDialog(TonePlayerGUI.this,
-                            "Частота и длительность должны быть положительными числами.",
-                            "Ошибка ввода", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
+            stopRequested = false;
 
+            playbackThread = new Thread(() -> {
+                try {
+                    double frequency = Double.parseDouble(freqField.getText());
+                    int duration = Integer.parseInt(durationField.getText());
+                    String text = textArea.getText().toUpperCase();
 
-                System.out.println(text);
-                System.out.println(text.length());
+                    if (frequency <= 0 || duration <= 0) {
+                        SwingUtilities.invokeLater(() ->
+                                JOptionPane.showMessageDialog(
+                                        TonePlayerGUI.this,
+                                        "Частота и длительность должны быть положительными числами.",
+                                        "Ошибка ввода",
+                                        JOptionPane.ERROR_MESSAGE)
+                        );
+                        return;
+                    }
 
-                if(!text.isEmpty()){
-                    StringBuilder converted = new StringBuilder(stringToMorze(text));
-                    System.out.println("converted: " + converted);          // строка морзе
+                    if (!text.isEmpty()) {
+                        String morse = stringToMorze(text).toString();
+                        System.out.println("Morse: " + morse);
 
-                    for (int i = 0; i < converted.length(); i++) {
-                        switch (converted.charAt(i)){
-                            case ' ':
-                                playTone(20000, duration);
-                                break;
-                            case '.':
+                        for (int i = 0; i < morse.length() && !stopRequested; i++) {
+                            char c = morse.charAt(i);
+                            if (c == '.') {
                                 playTone(frequency, duration);
-                                break;
-                            case '-':
-                                playTone(frequency, duration*3);
-                                break;
+                            } else if (c == '-') {
+                                playTone(frequency, duration * 3);
+                            } else if (c == ' ') {
+                                // Пауза между словами
+                                try {
+                                    Thread.sleep(duration * 3L);
+                                } catch (InterruptedException ex) {
+                                    stopRequested = true;
+                                    Thread.currentThread().interrupt();
+                                    return;
+                                }
+                            }
                         }
                     }
-                    converted.delete(0, converted.length());
+
+                } catch (Exception ex) {
+                    stopRequested = true;
+                    SwingUtilities.invokeLater(() ->
+                            JOptionPane.showMessageDialog(TonePlayerGUI.this,
+                                    "Ошибка: " + ex.getMessage(),
+                                    "Ошибка воспроизведения", JOptionPane.ERROR_MESSAGE)
+                    );
                 }
+            });
 
+            playbackThread.setDaemon(true);
+            playbackThread.start();
+        }
+    }
 
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(TonePlayerGUI.this,
-                        "Пожалуйста, введите корректные числа.",
-                        "Ошибка ввода", JOptionPane.ERROR_MESSAGE);
-            } catch (LineUnavailableException ex) {
-                JOptionPane.showMessageDialog(TonePlayerGUI.this,
-                        "Не удалось воспроизвести звук: " + ex.getMessage(),
-                        "Ошибка аудио", JOptionPane.ERROR_MESSAGE);
+    private class StopButtonListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            stopRequested = true;
+            if (currentLine != null) {
+                currentLine.close();        // немедленно остановить звук
             }
+            if (playbackThread != null) {
+                playbackThread.interrupt();
+            }
+
+//            JOptionPane.showMessageDialog(TonePlayerGUI.this,
+//                    "Воспроизведение остановлено.",
+//                    "Информация", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
     private void playTone(double frequency, int durationMs) throws LineUnavailableException {
+        if (stopRequested) return;
+
         int sampleCount = (int) ((SAMPLE_RATE * durationMs) / 1000.0);
         byte[] buffer = new byte[sampleCount * FRAME_SIZE];
 
-        // Генерация синусоиды
         for (int i = 0; i < sampleCount; i++) {
+            if (stopRequested) return;
             double time = i / (double) SAMPLE_RATE;
             double angle = 2.0 * Math.PI * frequency * time;
             short sample = (short) (Short.MAX_VALUE * Math.sin(angle));
-
-            // Little-endian: младший байт сначала
             buffer[i * 2] = (byte) (sample & 0xFF);
             buffer[i * 2 + 1] = (byte) ((sample >> 8) & 0xFF);
         }
 
-        // Аудиоформат и воспроизведение
         AudioFormat format = new AudioFormat(SAMPLE_RATE, 16, CHANNELS, SIGNED, BIG_ENDIAN);
-        try (SourceDataLine line = AudioSystem.getSourceDataLine(format)) {
-            line.open(format);
-            line.start();
-            line.write(buffer, 0, buffer.length);
-            line.drain();
+        currentLine = AudioSystem.getSourceDataLine(format);
+        currentLine.open(format);
+        currentLine.start();
+
+        // Воспроизводим по частям и проверяем stopRequested
+        int written = 0;
+        // по чуть-чуть, чтобы быстрее реагировать на остановку
+        int chunkSize = 1024;
+        while (written < buffer.length && !stopRequested) {
+            int toWrite = Math.min(chunkSize, buffer.length - written);
+            currentLine.write(buffer, written, toWrite);
+            written += toWrite;
         }
+
+        currentLine.drain();
+        currentLine.close();
+        currentLine = null;
     }
 
-    public static void main(String[] args) {
+    static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             try {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());

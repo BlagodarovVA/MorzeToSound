@@ -1,22 +1,22 @@
-package Morze;
+package main.java.Morze;
 
 import javax.sound.sampled.*;
 
 public class TonePlayer {
 
     // Параметры аудио
-    private static final int SAMPLE_RATE = 44100; // Гц
+    private static final int SAMPLE_RATE = 8000;  // Гц
     private static final int CHANNELS = 1;        // Моно
     private static final int FRAME_SIZE = 2;      // байт на сэмпл (16 бит)
     private static final boolean BIG_ENDIAN = false;
     private static final boolean SIGNED = true;
 
-    public static void main(String[] args) throws LineUnavailableException, InterruptedException {
-        // 440 Гц в течение 1 секунды
-        playTone(510.0, 1000);
+    static void main(String[] args) throws LineUnavailableException, InterruptedException {
+        // 510 Гц в течение 1 секунды
+        playTone(510, 1000);
     }
 
-    public static void playTone(double frequency, int durationMs) throws LineUnavailableException, InterruptedException {
+    public static void playTone(double frequency, int durationMs) throws LineUnavailableException {
         int bufferSize = (int) ((SAMPLE_RATE * durationMs) / 1000);
         byte[] buffer = new byte[bufferSize * FRAME_SIZE];
 

@@ -199,8 +199,8 @@ public class MorzeDictionary {
         }
 
         // Убираем завершающий пробел, если он есть
-        if (!sb.isEmpty() && sb.charAt(sb.length() - 1) == ' ') {
-            sb.setLength(sb.length() - 1);
+        if (!sb.isEmpty()) {
+            sb = new StringBuilder(sb.toString().trim());
         }
 
         return sb;
