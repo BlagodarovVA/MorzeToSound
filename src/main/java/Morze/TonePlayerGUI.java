@@ -39,7 +39,7 @@ public class TonePlayerGUI extends JFrame {
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
-        freqField = new JTextField("650", 12);
+        freqField = new JTextField("700", 12);
         add(freqField, gbc);
 
         // === Длительность ===

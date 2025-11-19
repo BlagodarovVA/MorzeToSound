@@ -2,7 +2,6 @@ package main.java.Morze;
 
 public class MorzeDictionary {
 
-
     public static StringBuilder stringToMorze(String str){
 
     StringBuilder sb = new StringBuilder();
