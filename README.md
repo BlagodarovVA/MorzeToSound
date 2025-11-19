@@ -3,4 +3,4 @@
            - длительность звукового сигнала точки (в мс). Длительность сигнала тире устанавливается в 3 раза больше, чем у точки.
            - Текст для преобразования.
 
-https://github.com/BlagodarovVA/MorzeToSound/blob/main/src/main/java/Morze/Screenshot_1.png
+<img width="350" height="220" alt="image" src="https://github.com/BlagodarovVA/MorzeToSound/blob/main/src/main/java/Morze/Screenshot_1.png" />
