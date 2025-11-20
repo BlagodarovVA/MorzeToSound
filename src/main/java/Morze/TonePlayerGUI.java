@@ -31,6 +31,31 @@ public class TonePlayerGUI extends JFrame {
         setLocationRelativeTo(null);
 
         setLayout(new GridBagLayout());
+
+        // Цвета для тёмной темы
+        Color darkBackground = new Color(30, 30, 30);      // тёмно-серый фон
+        Color lightText = new Color(220, 220, 220);        // светлый текст
+        Color fieldBackground = new Color(50, 50, 50);     // фон полей
+        Color buttonBackground = new Color(50, 50, 50);    // фон кнопок
+        Color buttonForeground = Color.BLACK;
+
+        // Применяем ко всему окну
+        getContentPane().setBackground(darkBackground);
+        getContentPane().setForeground(lightText);
+
+        // Настройка UIManager (влияет на новые компоненты)
+        UIManager.put("Panel.background", darkBackground);
+        UIManager.put("Panel.foreground", lightText);
+        UIManager.put("Label.foreground", lightText);
+        UIManager.put("TextField.background", fieldBackground);
+        UIManager.put("TextField.foreground", lightText);
+        UIManager.put("TextArea.background", fieldBackground);
+        UIManager.put("TextArea.foreground", lightText);
+        UIManager.put("Button.background", buttonBackground);
+        UIManager.put("Button.foreground", buttonForeground);
+        UIManager.put("ScrollPane.background", darkBackground);
+        UIManager.put("Viewport.background", fieldBackground);
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(6, 6, 6, 6); // отступы: сверху, слева, снизу, справа
 
@@ -80,7 +105,7 @@ public class TonePlayerGUI extends JFrame {
         gbc.gridx = 0;
         gbc.gridy = 3;
         gbc.anchor = GridBagConstraints.EAST;
-        gbc.weighty = 0; // не растягивать сильно
+        gbc.weighty = 0;                                    // не растягивать сильно
         add(new JLabel("Морзе:"), gbc);
 
         gbc.gridx = 1;
@@ -92,11 +117,10 @@ public class TonePlayerGUI extends JFrame {
         morseOutputArea.setFont(freqField.getFont());
         morseOutputArea.setLineWrap(true);
         morseOutputArea.setWrapStyleWord(true);
-        morseOutputArea.setBackground(UIManager.getColor("TextField.disabledBackground")); // необязательно, но красиво
         JScrollPane outputScrollPane = new JScrollPane(morseOutputArea);
         add(outputScrollPane, gbc);
 
-        // === Кнопка "Воспроизвести" ===
+//        // === Кнопка "Воспроизвести" ===
         gbc.gridy = 4;
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.CENTER;
@@ -110,8 +134,8 @@ public class TonePlayerGUI extends JFrame {
         stopButton.addActionListener(new StopButtonListener());
         add(stopButton, gbc);
 
-        pack();                 // автоматически подбирает оптимальный размер окна
-        setResizable(true);     // чтобы окно нельзя было растягивать
+        pack();                     // автоматически оптимальный размер окна
+//        setResizable(false);         // чтобы окно нельзя было растягивать
     }
 
     private void writeTone(SourceDataLine line, double frequency, int durationMs) {
