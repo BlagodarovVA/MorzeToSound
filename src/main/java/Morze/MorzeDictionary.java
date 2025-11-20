@@ -111,6 +111,86 @@ public class MorzeDictionary {
                     sb.append(".-.- ");
                     break;
 
+                // Латинские буквы
+                case 'A':
+                    sb.append(".- ");
+                    break;
+                case 'B':
+                    sb.append("-... ");
+                    break;
+                case 'C':
+                    sb.append("-.-. ");
+                    break;
+                case 'D':
+                    sb.append("-.. ");
+                    break;
+                case 'E':
+                    sb.append(". ");
+                    break;
+                case 'F':
+                    sb.append("..-. ");
+                    break;
+                case 'G':
+                    sb.append("--. ");
+                    break;
+                case 'H':
+                    sb.append(".... ");
+                    break;
+                case 'I':
+                    sb.append(".. ");
+                    break;
+                case 'J':
+                    sb.append(".--- ");
+                    break;
+                case 'K':
+                    sb.append("-.- ");
+                    break;
+                case 'L':
+                    sb.append(".-.. ");
+                    break;
+                case 'M':
+                    sb.append("-- ");
+                    break;
+                case 'N':
+                    sb.append("-. ");
+                    break;
+                case 'O':
+                    sb.append("--- ");
+                    break;
+                case 'P':
+                    sb.append(".--. ");
+                    break;
+                case 'Q':
+                    sb.append("--.- ");
+                    break;
+                case 'R':
+                    sb.append(".-. ");
+                    break;
+                case 'S':
+                    sb.append("... ");
+                    break;
+                case 'T':
+                    sb.append("- ");
+                    break;
+                case 'U':
+                    sb.append("..- ");
+                    break;
+                case 'V':
+                    sb.append("...- ");
+                    break;
+                case 'W':
+                    sb.append(".-- ");
+                    break;
+                case 'X':
+                    sb.append("-..- ");
+                    break;
+                case 'Y':
+                    sb.append("-.-- ");
+                    break;
+                case 'Z':
+                    sb.append("--.. ");
+                    break;
+
                 // Цифры
                 case '0':
                     sb.append("----- ");
