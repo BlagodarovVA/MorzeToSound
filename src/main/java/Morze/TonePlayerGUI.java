@@ -10,7 +10,7 @@ import static main.java.Morze.MorzeDictionary.stringToMorze;
 
 public class TonePlayerGUI extends JFrame {
 
-    private static final int SAMPLE_RATE = 8000;  // Гц
+    private static final int SAMPLE_RATE = 22050; // Гц
     private static final int CHANNELS = 1;        // Моно
     private static final int FRAME_SIZE = 2;      // байт на сэмпл (16 бит)
     private static final boolean SIGNED = true;
@@ -19,6 +19,7 @@ public class TonePlayerGUI extends JFrame {
     private final JTextField freqField;
     private final JTextField durationField;
     private final JTextArea textArea;
+    private final JTextArea morseOutputArea;
     private volatile boolean stopRequested = false;
     private SourceDataLine currentLine = null; // чтобы можно было прервать звук мгновенно
     private Thread playbackThread = null;      // чтобы можно было отслеживать активное воспроизведение
@@ -34,11 +35,13 @@ public class TonePlayerGUI extends JFrame {
         gbc.insets = new Insets(6, 6, 6, 6); // отступы: сверху, слева, снизу, справа
 
         // === Частота ===
-        gbc.gridx = 0; gbc.gridy = 0;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
         gbc.anchor = GridBagConstraints.WEST; // метка по левому краю
         add(new JLabel("Частота (Гц):"), gbc);
 
-        gbc.gridx = 1; gbc.gridy = 0;
+        gbc.gridx = 1;
+        gbc.gridy = 0;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
@@ -46,21 +49,25 @@ public class TonePlayerGUI extends JFrame {
         add(freqField, gbc);
 
         // === Длительность ===
-        gbc.gridx = 0; gbc.gridy = 1;
+        gbc.gridx = 0;
+        gbc.gridy = 1;
         gbc.anchor = GridBagConstraints.EAST;
         add(new JLabel("Длительность точки (мс):"), gbc);
 
-        gbc.gridx = 1; gbc.gridy = 1;
+        gbc.gridx = 1;
+        gbc.gridy = 1;
         gbc.anchor = GridBagConstraints.WEST;
         durationField = new JTextField("80", 12);
         add(durationField, gbc);
 
-        // === Текст ===
-        gbc.gridx = 0; gbc.gridy = 2;
+        // === Текст для ввода ===
+        gbc.gridx = 0;
+        gbc.gridy = 2;
         gbc.anchor = GridBagConstraints.EAST;
         add(new JLabel("Текст:"), gbc);
 
-        gbc.gridx = 1; gbc.gridy = 2;
+        gbc.gridx = 1;
+        gbc.gridy = 2;
         gbc.anchor = GridBagConstraints.WEST;
         textArea = new JTextArea("привет", 4, 20);          // 4 строки, ~20 символов в ширину
         textArea.setFont(freqField.getFont());
@@ -69,18 +76,36 @@ public class TonePlayerGUI extends JFrame {
         JScrollPane scrollPane = new JScrollPane(textArea); // Добавляем прокрутку
         add(scrollPane, gbc);
 
+        // === Преобразованный текст (Морзе) ===
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.anchor = GridBagConstraints.EAST;
+        gbc.weighty = 0; // не растягивать сильно
+        add(new JLabel("Морзе:"), gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 3;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weighty = 1.0;
+        morseOutputArea = new JTextArea();
+        morseOutputArea.setEditable(false); // только для чтения
+        morseOutputArea.setFont(freqField.getFont());
+        morseOutputArea.setLineWrap(true);
+        morseOutputArea.setWrapStyleWord(true);
+        morseOutputArea.setBackground(UIManager.getColor("TextField.disabledBackground")); // необязательно, но красиво
+        JScrollPane outputScrollPane = new JScrollPane(morseOutputArea);
+        add(outputScrollPane, gbc);
+
         // === Кнопка "Воспроизвести" ===
-        gbc.gridx = 0; gbc.gridy = 3;
+        gbc.gridy = 4;
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.CENTER;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.weightx = 0;
         JButton playButton = new JButton("Старт");
         playButton.addActionListener(new PlayButtonListener());
         add(playButton, gbc);
 
         // === Кнопка "Прервать" ===
-        gbc.gridy = 4;
+        gbc.gridy = 5;
         JButton stopButton = new JButton("Стоп");
         stopButton.addActionListener(new StopButtonListener());
         add(stopButton, gbc);
@@ -89,16 +114,51 @@ public class TonePlayerGUI extends JFrame {
         setResizable(true);     // чтобы окно нельзя было растягивать
     }
 
+    private void writeTone(SourceDataLine line, double frequency, int durationMs) {
+        if (durationMs <= 0 || stopRequested) return;
+
+        int sampleCount = (int) ((SAMPLE_RATE * durationMs) / 1000.0);
+        byte[] buffer = new byte[sampleCount * FRAME_SIZE];
+
+        final int FADE_MS = 6;
+        final int fadeSamples = Math.min(sampleCount / 2, (int) ((SAMPLE_RATE * FADE_MS) / 1000.0));
+
+        for (int i = 0; i < sampleCount; i++) {
+            if (stopRequested) return;
+
+            double time = i / (double) SAMPLE_RATE;
+            double angle = 2.0 * Math.PI * frequency * time;
+            double sine = Math.sin(angle);
+
+            double gain = 1.0;
+            if (i < fadeSamples) {
+                gain = (double) i / fadeSamples;
+            } else if (i >= sampleCount - fadeSamples) {
+                gain = (double) (sampleCount - 1 - i) / fadeSamples;
+            }
+
+            short sample = (short) (Short.MAX_VALUE * sine * gain);
+            buffer[i * 2] = (byte) (sample & 0xFF);
+            buffer[i * 2 + 1] = (byte) ((sample >> 8) & 0xFF);
+        }
+
+        line.write(buffer, 0, buffer.length);
+    }
+
+    private void writeSilence(SourceDataLine line, int durationMs) {
+        if (durationMs <= 0) return;
+        int sampleCount = (int) ((SAMPLE_RATE * durationMs) / 1000.0);
+        byte[] silence = new byte[sampleCount * FRAME_SIZE]; // по умолчанию нули
+        line.write(silence, 0, silence.length);
+    }
+
     private class PlayButtonListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            // Если уже идёт воспроизведение — игнорируем повторный запуск
             if (playbackThread != null && playbackThread.isAlive()) {
-                JOptionPane.showMessageDialog(
-                        TonePlayerGUI.this,
-                        "Воспроизведение уже идёт",
-                        "Информация",
-                        JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(TonePlayerGUI.this,
+                        "Воспроизведение уже идёт. Нажмите «Прервать», чтобы остановить.",
+                        "Информация", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
 
@@ -112,40 +172,46 @@ public class TonePlayerGUI extends JFrame {
 
                     if (frequency <= 0 || duration <= 0) {
                         SwingUtilities.invokeLater(() ->
-                                JOptionPane.showMessageDialog(
-                                        TonePlayerGUI.this,
+                                JOptionPane.showMessageDialog(TonePlayerGUI.this,
                                         "Частота и длительность должны быть положительными числами.",
-                                        "Ошибка ввода",
-                                        JOptionPane.ERROR_MESSAGE)
+                                        "Ошибка ввода", JOptionPane.ERROR_MESSAGE)
                         );
                         return;
                     }
 
                     if (!text.isEmpty()) {
                         String morse = stringToMorze(text).toString();
-                        System.out.println("Morse: " + morse);
+                        SwingUtilities.invokeLater(() -> morseOutputArea.setText(morse));
+
+                        AudioFormat format = new AudioFormat(SAMPLE_RATE, 16, CHANNELS, SIGNED, BIG_ENDIAN);
+                        SourceDataLine line = AudioSystem.getSourceDataLine(format);
+                        line.open(format);
+                        currentLine = line; // ← для прерывания
+                        line.start();
 
                         for (int i = 0; i < morse.length() && !stopRequested; i++) {
                             char c = morse.charAt(i);
                             if (c == '.') {
-                                playTone(frequency, duration);
+                                writeTone(line, frequency, duration);
                             } else if (c == '-') {
-                                playTone(frequency, duration * 3);
+                                writeTone(line, frequency, duration * 3);
                             } else if (c == ' ') {
-                                // Пауза между словами
-                                try {
-                                    Thread.sleep(duration * 3L);
-                                } catch (InterruptedException ex) {
-                                    stopRequested = true;
-                                    Thread.currentThread().interrupt();
-                                    return;
-                                }
+                                writeSilence(line, duration * 3);
                             }
+                            // Дополнительно: пауза между символами (например, 1 * duration)
+                             writeSilence(line, 2 * duration);
                         }
-                    }
 
+                        if (!stopRequested) {
+                            line.drain();
+                        }
+                        line.close();
+                        currentLine = null;
+
+                    }
                 } catch (Exception ex) {
                     stopRequested = true;
+                    currentLine = null;
                     SwingUtilities.invokeLater(() ->
                             JOptionPane.showMessageDialog(TonePlayerGUI.this,
                                     "Ошибка: " + ex.getMessage(),
@@ -169,46 +235,49 @@ public class TonePlayerGUI extends JFrame {
             if (playbackThread != null) {
                 playbackThread.interrupt();
             }
-
-//            JOptionPane.showMessageDialog(TonePlayerGUI.this,
-//                    "Воспроизведение остановлено.",
-//                    "Информация", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
     private void playTone(double frequency, int durationMs) throws LineUnavailableException {
-        if (stopRequested) return;
+        if (durationMs <= 0) return;
 
         int sampleCount = (int) ((SAMPLE_RATE * durationMs) / 1000.0);
         byte[] buffer = new byte[sampleCount * FRAME_SIZE];
 
+        // Длительность fade in/out (в миллисекундах)
+        final int FADE_MS = 8;
+        final int fadeSamples = Math.min(sampleCount / 2, (int) ((SAMPLE_RATE * FADE_MS) / 1000.0));
+
         for (int i = 0; i < sampleCount; i++) {
             if (stopRequested) return;
+
             double time = i / (double) SAMPLE_RATE;
             double angle = 2.0 * Math.PI * frequency * time;
-            short sample = (short) (Short.MAX_VALUE * Math.sin(angle));
+            double sine = Math.sin(angle);
+
+            // Применяем fade in/out
+            double gain = 1.0;
+            if (i < fadeSamples) {
+                // Fade in
+                gain = (double) i / fadeSamples;
+            } else if (i >= sampleCount - fadeSamples) {
+                // Fade out
+                gain = (double) (sampleCount - 1 - i) / fadeSamples;
+            }
+
+            short sample = (short) (Short.MAX_VALUE * sine * gain);
+
             buffer[i * 2] = (byte) (sample & 0xFF);
             buffer[i * 2 + 1] = (byte) ((sample >> 8) & 0xFF);
         }
 
         AudioFormat format = new AudioFormat(SAMPLE_RATE, 16, CHANNELS, SIGNED, BIG_ENDIAN);
-        currentLine = AudioSystem.getSourceDataLine(format);
-        currentLine.open(format);
-        currentLine.start();
-
-        // Воспроизводим по частям и проверяем stopRequested
-        int written = 0;
-        // по чуть-чуть, чтобы быстрее реагировать на остановку
-        int chunkSize = 1024;
-        while (written < buffer.length && !stopRequested) {
-            int toWrite = Math.min(chunkSize, buffer.length - written);
-            currentLine.write(buffer, written, toWrite);
-            written += toWrite;
+        try (SourceDataLine line = AudioSystem.getSourceDataLine(format)) {
+            line.open(format);
+            line.start();
+            line.write(buffer, 0, buffer.length);
+            line.drain();
         }
-
-        currentLine.drain();
-        currentLine.close();
-        currentLine = null;
     }
 
     static void main(String[] args) {
@@ -220,5 +289,3 @@ public class TonePlayerGUI extends JFrame {
         });
     }
 }
-
-

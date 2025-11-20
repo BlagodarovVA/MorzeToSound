@@ -198,11 +198,10 @@ public class MorzeDictionary {
             }
         }
 
-        // Убираем завершающий пробел, если он есть
+        // Делаем трим пробелов в начале и в конце
         if (!sb.isEmpty()) {
             sb = new StringBuilder(sb.toString().trim());
         }
-
         return sb;
     }
 }

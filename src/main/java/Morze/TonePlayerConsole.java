@@ -2,7 +2,7 @@ package main.java.Morze;
 
 import javax.sound.sampled.*;
 
-public class TonePlayer {
+public class TonePlayerConsole {
 
     // Параметры аудио
     private static final int SAMPLE_RATE = 8000;  // Гц
