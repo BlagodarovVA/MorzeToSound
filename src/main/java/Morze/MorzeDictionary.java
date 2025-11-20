@@ -9,7 +9,7 @@ public class MorzeDictionary {
         for (int i = 0; i < str.length(); i++) {
             switch (str.charAt(i)){
                 case ' ':
-                    sb.append("   "); // три пробела между словами
+                    sb.append(" ");
                     break;
 
                 // Русские буквы
