@@ -42,7 +42,8 @@ public class PlayButtonListener implements ActionListener {
 
                 if (!text.isEmpty()) {
                     String morse = stringToMorze(text).toString();
-                    SwingUtilities.invokeLater(() -> gui.morseOutputArea.setText(morse));
+                    SwingUtilities.invokeLater(() -> gui.morseOutputPane.setText(morse));
+                    gui.highlightMorse(0); // сброс
 
                     javax.sound.sampled.AudioFormat format = AudioPlayer.getAudioFormat();
                     javax.sound.sampled.SourceDataLine line = javax.sound.sampled.AudioSystem.getSourceDataLine(format);
@@ -52,6 +53,11 @@ public class PlayButtonListener implements ActionListener {
 
                     for (int i = 0; i < morse.length() && !gui.stopRequested; i++) {
                         char c = morse.charAt(i);
+
+                        // Обновляем подсветку ДО воспроизведения символа
+                        final int pos = i + 1;
+                        SwingUtilities.invokeLater(() -> gui.highlightMorse(pos));
+
                         if (c == '.') {
                             AudioPlayer.writeTone(line, frequency, duration);
                         } else if (c == '-') {

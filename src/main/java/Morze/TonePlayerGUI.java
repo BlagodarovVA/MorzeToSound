@@ -2,6 +2,7 @@ package main.java.Morze;
 
 import javax.sound.sampled.*;
 import javax.swing.*;
+import javax.swing.text.*;
 import java.awt.*;
 
 public class TonePlayerGUI extends JFrame {
@@ -9,7 +10,7 @@ public class TonePlayerGUI extends JFrame {
     protected final JTextField freqField;
     protected final JTextField durationField;
     protected final JTextArea textArea;
-    protected final JTextArea morseOutputArea;
+    protected JTextPane morseOutputPane;
     protected volatile boolean stopRequested = false;
     protected SourceDataLine currentLine = null;        // чтобы можно было прервать звук мгновенно
     protected Thread playbackThread = null;             // чтобы можно было отслеживать активное воспроизведение
@@ -28,6 +29,7 @@ public class TonePlayerGUI extends JFrame {
         Color fieldBackground = new Color(50, 50, 50);     // фон полей
         Color buttonBackground = new Color(50, 50, 50);    // фон кнопок
         Color buttonForeground = Color.BLACK;
+        Color caretColor = new Color(220, 220, 220);       // светло-серый курсор
 
         // Применяем ко всему окну
         getContentPane().setBackground(darkBackground);
@@ -106,19 +108,30 @@ public class TonePlayerGUI extends JFrame {
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weighty = 1.0;
-        morseOutputArea = new JTextArea();
-        morseOutputArea.setEditable(false); // только для чтения
-        morseOutputArea.setFont(freqField.getFont());
-        morseOutputArea.setLineWrap(true);
-        morseOutputArea.setWrapStyleWord(true);
-        JScrollPane outputScrollPane = new JScrollPane(morseOutputArea);
+        morseOutputPane = new JTextPane();
+        morseOutputPane.setEditable(false);
+        morseOutputPane.setFont(freqField.getFont());
+        morseOutputPane.setBackground(darkBackground);
+        morseOutputPane.setForeground(lightText);
+        morseOutputPane.setCaretColor(caretColor);                  // цвет мигающего курсора
+        morseOutputPane.setSelectedTextColor(darkBackground);
+        morseOutputPane.setSelectionColor(new Color(80, 120, 200)); // цвет выделения
+        // Устанавливаем стиль по умолчанию
+        StyledDocument doc = morseOutputPane.getStyledDocument();
+        Style defaultStyle = doc.getStyle(StyleContext.DEFAULT_STYLE);
+        StyleConstants.setForeground(defaultStyle, lightText);
+        StyleConstants.setBackground(defaultStyle, darkBackground);
+
+        morseOutputPane.setEditorKit(new WrapEditorKit());
+
+        JScrollPane outputScrollPane = new JScrollPane(morseOutputPane);
+        outputScrollPane.setBackground(darkBackground);
         add(outputScrollPane, gbc);
 
         // === Кнопка "Воспроизвести" ===
         gbc.gridy = 4;
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.CENTER;
-        //gbc.fill = GridBagConstraints.NONE;
         gbc.weighty = 0;
         JButton playButton = new JButton("Старт");
         playButton.addActionListener(new PlayButtonListener(this));
@@ -133,6 +146,87 @@ public class TonePlayerGUI extends JFrame {
         // === Параметры окна ===
         pack();                     // автоматически оптимальный размер окна
         // setResizable(false);         // чтобы окно нельзя было растягивать
+    }
+
+
+    private static class WrapEditorKit extends StyledEditorKit {
+        @Override
+        public ViewFactory getViewFactory() {
+            return new StyledViewFactory();
+        }
+
+        private static class StyledViewFactory implements ViewFactory {
+            @Override
+            public View create(Element elem) {
+                String kind = elem.getName();
+                if (kind != null) {
+                    switch (kind) {
+                        case AbstractDocument.ContentElementName:
+                            return new WrappedLabelView(elem);
+                        case AbstractDocument.ParagraphElementName:
+                            return new ParagraphView(elem);
+                        case AbstractDocument.SectionElementName:
+                            return new BoxView(elem, View.Y_AXIS);
+                        case StyleConstants.ComponentElementName:
+                            return new ComponentView(elem);
+                        case StyleConstants.IconElementName:
+                            return new IconView(elem);
+                    }
+                }
+                return new LabelView(elem);
+            }
+        }
+
+        private static class WrappedLabelView extends LabelView {
+            public WrappedLabelView(Element elem) {
+                super(elem);
+            }
+
+            @Override
+            public float getMinimumSpan(int axis) {
+                switch (axis) {
+                    case View.X_AXIS:
+                        return 0;
+                    case View.Y_AXIS:
+                        return super.getMinimumSpan(axis);
+                    default:
+                        throw new IllegalArgumentException("Invalid axis: " + axis);
+                }
+            }
+        }
+    }
+
+    void highlightMorse(int endPos) {
+        try {
+            StyledDocument doc = morseOutputPane.getStyledDocument();
+            doc.removeStyle("green");
+            doc.removeStyle("current");
+
+            Style green = doc.addStyle("green", null);
+            StyleConstants.setForeground(green, Color.GREEN);
+
+            Style current = doc.addStyle("current", null);
+            StyleConstants.setForeground(current, Color.YELLOW);
+            StyleConstants.setBackground(current, new Color(60, 60, 60)); // фон
+
+            // Очищаем всё форматирование
+            doc.setCharacterAttributes(0, doc.getLength(), doc.getStyle(StyleContext.DEFAULT_STYLE), true);
+
+            if (endPos <= 0) return;
+
+            // Подсвечиваем воспроизведённые символы (зелёный)
+            if (endPos > 1) {
+                doc.setCharacterAttributes(0, endPos - 1, green, true);
+            }
+
+            // Подсвечиваем текущий символ (жёлтый)
+            if (endPos - 1 < doc.getLength()) {
+                doc.setCharacterAttributes(endPos - 1, 1, current, true);
+            }
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     static void main(String[] args) {
