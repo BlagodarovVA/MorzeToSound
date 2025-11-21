@@ -1,10 +1,10 @@
+// Черновик для консоли
 package main.java.Morze;
 
 import javax.sound.sampled.*;
 
 public class TonePlayerConsole {
 
-    // Параметры аудио
     private static final int SAMPLE_RATE = 8000;  // Гц
     private static final int CHANNELS = 1;        // Моно
     private static final int FRAME_SIZE = 2;      // байт на сэмпл (16 бит)

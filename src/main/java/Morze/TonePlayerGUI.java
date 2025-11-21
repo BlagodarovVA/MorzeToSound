@@ -96,7 +96,7 @@ public class TonePlayerGUI extends JFrame {
         JScrollPane scrollPane = new JScrollPane(textArea); // Добавляем прокрутку
         add(scrollPane, gbc);
 
-        // === Преобразованный текст (Морзе) ===
+        // === Строка Морзе ===
         gbc.gridx = 0;
         gbc.gridy = 3;
         gbc.anchor = GridBagConstraints.EAST;
@@ -144,7 +144,7 @@ public class TonePlayerGUI extends JFrame {
         add(stopButton, gbc);
 
         // === Параметры окна ===
-        pack();                     // автоматически оптимальный размер окна
+        pack();                         // автоматически оптимальный размер окна
         // setResizable(false);         // чтобы окно нельзя было растягивать
     }
 
@@ -184,14 +184,11 @@ public class TonePlayerGUI extends JFrame {
 
             @Override
             public float getMinimumSpan(int axis) {
-                switch (axis) {
-                    case View.X_AXIS:
-                        return 0;
-                    case View.Y_AXIS:
-                        return super.getMinimumSpan(axis);
-                    default:
-                        throw new IllegalArgumentException("Invalid axis: " + axis);
-                }
+                return switch (axis) {
+                    case View.X_AXIS -> 0;
+                    case View.Y_AXIS -> super.getMinimumSpan(axis);
+                    default -> throw new IllegalArgumentException("Invalid axis: " + axis);
+                };
             }
         }
     }

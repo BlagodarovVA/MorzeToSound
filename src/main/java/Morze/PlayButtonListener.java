@@ -1,5 +1,8 @@
 package main.java.Morze;
 
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.SourceDataLine;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -43,10 +46,10 @@ public class PlayButtonListener implements ActionListener {
                 if (!text.isEmpty()) {
                     String morse = stringToMorze(text).toString();
                     SwingUtilities.invokeLater(() -> gui.morseOutputPane.setText(morse));
-                    gui.highlightMorse(0); // сброс
+                    gui.highlightMorse(0);              // сброс
 
-                    javax.sound.sampled.AudioFormat format = AudioPlayer.getAudioFormat();
-                    javax.sound.sampled.SourceDataLine line = javax.sound.sampled.AudioSystem.getSourceDataLine(format);
+                    AudioFormat format = AudioPlayer.getAudioFormat();
+                    SourceDataLine line = AudioSystem.getSourceDataLine(format);
                     line.open(format);
                     gui.currentLine = line;
                     line.start();
@@ -60,9 +63,11 @@ public class PlayButtonListener implements ActionListener {
 
                         if (c == '.') {
                             AudioPlayer.writeTone(line, frequency, duration);
-                        } else if (c == '-') {
+                        }
+                        else if (c == '-') {
                             AudioPlayer.writeTone(line, frequency, duration * 3);
-                        } else if (c == ' ') {
+                        }
+                        else if (c == ' ') {
                             AudioPlayer.writeSilence(line, duration * 5);
                         }
                         // Дополнительно: пауза между символами (например, 1 * duration)
@@ -72,6 +77,7 @@ public class PlayButtonListener implements ActionListener {
                     if (!gui.stopRequested) {
                         line.drain();
                     }
+
                     line.close();
                     gui.currentLine = null;
 

@@ -8,270 +8,185 @@ public class MorzeDictionary {
 
         for (int i = 0; i < str.length(); i++) {
             switch (str.charAt(i)){
-                case ' ':
-                    sb.append(" ");
+                case ' ': sb.append(" ");
                     break;
 
                 // Русские буквы
-                case 'А':
-                    sb.append(".- ");
+                case 'А': sb.append(".- ");
                     break;
-                case 'Б':
-                    sb.append("-... ");
+                case 'Б': sb.append("-... ");
                     break;
-                case 'В':
-                    sb.append(".-- ");
+                case 'В': sb.append(".-- ");
                     break;
-                case 'Г':
-                    sb.append("--. ");
+                case 'Г': sb.append("--. ");
                     break;
-                case 'Д':
-                    sb.append("-.. ");
+                case 'Д': sb.append("-.. ");
                     break;
                 case 'Е':
-                case 'Ё': // Ё кодируется так же, как Е
-                    sb.append(". ");
+                case 'Ё': sb.append(". ");
                     break;
-                case 'Ж':
-                    sb.append("...- ");
+                case 'Ж': sb.append("...- ");
                     break;
-                case 'З':
-                    sb.append("--.. ");
+                case 'З': sb.append("--.. ");
                     break;
-                case 'И':
-                    sb.append(".. ");
+                case 'И': sb.append(".. ");
                     break;
-                case 'Й':
-                    sb.append(".--- ");
+                case 'Й': sb.append(".--- ");
                     break;
-                case 'К':
-                    sb.append("-.- ");
+                case 'К': sb.append("-.- ");
                     break;
-                case 'Л':
-                    sb.append(".-.. ");
+                case 'Л': sb.append(".-.. ");
                     break;
-                case 'М':
-                    sb.append("-- ");
+                case 'М': sb.append("-- ");
                     break;
-                case 'Н':
-                    sb.append("-. ");
+                case 'Н': sb.append("-. ");
                     break;
-                case 'О':
-                    sb.append("--- ");
+                case 'О': sb.append("--- ");
                     break;
-                case 'П':
-                    sb.append(".--. ");
+                case 'П': sb.append(".--. ");
                     break;
-                case 'Р':
-                    sb.append(".-. ");
+                case 'Р': sb.append(".-. ");
                     break;
-                case 'С':
-                    sb.append("... ");
+                case 'С': sb.append("... ");
                     break;
-                case 'Т':
-                    sb.append("- ");
+                case 'Т': sb.append("- ");
                     break;
-                case 'У':
-                    sb.append("..- ");
+                case 'У': sb.append("..- ");
                     break;
-                case 'Ф':
-                    sb.append("..-. ");
+                case 'Ф': sb.append("..-. ");
                     break;
-                case 'Х':
-                    sb.append(".... ");
+                case 'Х': sb.append(".... ");
                     break;
-                case 'Ц':
-                    sb.append("-.-. ");
+                case 'Ц': sb.append("-.-. ");
                     break;
-                case 'Ч':
-                    sb.append("---. ");
+                case 'Ч': sb.append("---. ");
                     break;
-                case 'Ш':
-                    sb.append("---- ");
+                case 'Ш': sb.append("---- ");
                     break;
-                case 'Щ':
-                    sb.append("--.- ");
+                case 'Щ': sb.append("--.- ");
                     break;
-                case 'Ъ':
-                    sb.append(".--.-. ");
+                case 'Ъ': sb.append(".--.-. ");
                     break;
-                case 'Ы':
-                    sb.append("-.-- ");
+                case 'Ы': sb.append("-.-- ");
                     break;
-                case 'Ь':
-                    sb.append("-..- ");
+                case 'Ь': sb.append("-..- ");
                     break;
-                case 'Э':
-                    sb.append("..-.. ");
+                case 'Э': sb.append("..-.. ");
                     break;
-                case 'Ю':
-                    sb.append("..-- ");
+                case 'Ю': sb.append("..-- ");
                     break;
-                case 'Я':
-                    sb.append(".-.- ");
+                case 'Я': sb.append(".-.- ");
                     break;
 
                 // Латинские буквы
-                case 'A':
-                    sb.append(".- ");
+                case 'A': sb.append(".- ");
                     break;
-                case 'B':
-                    sb.append("-... ");
+                case 'B': sb.append("-... ");
                     break;
-                case 'C':
-                    sb.append("-.-. ");
+                case 'C': sb.append("-.-. ");
                     break;
-                case 'D':
-                    sb.append("-.. ");
+                case 'D': sb.append("-.. ");
                     break;
-                case 'E':
-                    sb.append(". ");
+                case 'E': sb.append(". ");
                     break;
-                case 'F':
-                    sb.append("..-. ");
+                case 'F': sb.append("..-. ");
                     break;
-                case 'G':
-                    sb.append("--. ");
+                case 'G': sb.append("--. ");
                     break;
-                case 'H':
-                    sb.append(".... ");
+                case 'H': sb.append(".... ");
                     break;
-                case 'I':
-                    sb.append(".. ");
+                case 'I': sb.append(".. ");
                     break;
-                case 'J':
-                    sb.append(".--- ");
+                case 'J': sb.append(".--- ");
                     break;
-                case 'K':
-                    sb.append("-.- ");
+                case 'K': sb.append("-.- ");
                     break;
-                case 'L':
-                    sb.append(".-.. ");
+                case 'L': sb.append(".-.. ");
                     break;
-                case 'M':
-                    sb.append("-- ");
+                case 'M': sb.append("-- ");
                     break;
-                case 'N':
-                    sb.append("-. ");
+                case 'N': sb.append("-. ");
                     break;
-                case 'O':
-                    sb.append("--- ");
+                case 'O': sb.append("--- ");
                     break;
-                case 'P':
-                    sb.append(".--. ");
+                case 'P': sb.append(".--. ");
                     break;
-                case 'Q':
-                    sb.append("--.- ");
+                case 'Q': sb.append("--.- ");
                     break;
-                case 'R':
-                    sb.append(".-. ");
+                case 'R': sb.append(".-. ");
                     break;
-                case 'S':
-                    sb.append("... ");
+                case 'S': sb.append("... ");
                     break;
-                case 'T':
-                    sb.append("- ");
+                case 'T': sb.append("- ");
                     break;
-                case 'U':
-                    sb.append("..- ");
+                case 'U': sb.append("..- ");
                     break;
-                case 'V':
-                    sb.append("...- ");
+                case 'V': sb.append("...- ");
                     break;
-                case 'W':
-                    sb.append(".-- ");
+                case 'W': sb.append(".-- ");
                     break;
-                case 'X':
-                    sb.append("-..- ");
+                case 'X': sb.append("-..- ");
                     break;
-                case 'Y':
-                    sb.append("-.-- ");
+                case 'Y': sb.append("-.-- ");
                     break;
-                case 'Z':
-                    sb.append("--.. ");
+                case 'Z': sb.append("--.. ");
                     break;
 
                 // Цифры
-                case '0':
-                    sb.append("----- ");
+                case '0': sb.append("----- ");
                     break;
-                case '1':
-                    sb.append(".---- ");
+                case '1': sb.append(".---- ");
                     break;
-                case '2':
-                    sb.append("..--- ");
+                case '2': sb.append("..--- ");
                     break;
-                case '3':
-                    sb.append("...-- ");
+                case '3': sb.append("...-- ");
                     break;
-                case '4':
-                    sb.append("....- ");
+                case '4': sb.append("....- ");
                     break;
-                case '5':
-                    sb.append("..... ");
+                case '5': sb.append("..... ");
                     break;
-                case '6':
-                    sb.append("-.... ");
+                case '6': sb.append("-.... ");
                     break;
-                case '7':
-                    sb.append("--... ");
+                case '7': sb.append("--... ");
                     break;
-                case '8':
-                    sb.append("---.. ");
+                case '8': sb.append("---.. ");
                     break;
-                case '9':
-                    sb.append("----. ");
+                case '9': sb.append("----. ");
                     break;
 
                 // Знаки препинания
-                case '.':
-                    sb.append(".-.-.- ");
+                case '.': sb.append(".-.-.- ");
                     break;
-                case ',':
-                    sb.append("--..-- ");
+                case ',': sb.append("--..-- ");
                     break;
-                case '?':
-                    sb.append("..--.. ");
+                case '?': sb.append("..--.. ");
                     break;
-                case '!':
-                    sb.append("-.-.-- ");
+                case '!': sb.append("-.-.-- ");
                     break;
-                case ':':
-                    sb.append("---... ");
+                case ':': sb.append("---... ");
                     break;
-                case ';':
-                    sb.append("-.-.-. ");
+                case ';': sb.append("-.-.-. ");
                     break;
-                case '-':
-                    sb.append("-....- ");
+                case '-': sb.append("-....- ");
                     break;
-                case '"':
-                    sb.append(".-..-. ");
+                case '"': sb.append(".-..-. ");
                     break;
                 case '(':
-                case ')':
-                    sb.append("-.--.- ");
+                case ')': sb.append("-.--.- ");
                     break;
-                case '\'':
-                    sb.append(".----. ");
+                case '\'': sb.append(".----. ");
                     break;
-                case '/':
-                    sb.append("-..-. ");
+                case '/': sb.append("-..-. ");
                     break;
-                case '_':
-                    sb.append("..--.- ");
+                case '_': sb.append("..--.- ");
                     break;
-                case '@':
-                    sb.append(".--.-. ");
+                case '@': sb.append(".--.-. ");
                     break;
-                case '=':
-                    sb.append("-...- ");
+                case '=': sb.append("-...- ");
                     break;
-                case '+':
-                    sb.append(".-.-. ");
+                case '+': sb.append(".-.-. ");
                     break;
-                case '&':
-                    sb.append(".-... ");
+                case '&': sb.append(".-... ");
                     break;
 
                 default: break;

@@ -4,14 +4,14 @@ import javax.sound.sampled.*;
 
 public class AudioPlayer {
 
-    private static final int SAMPLE_RATE = 22050;
-    private static final int CHANNELS = 1;
-    private static final int FRAME_SIZE = 2;
+    private static final int SAMPLE_RATE = 22050;   // Частота дискретизации
+    private static final int CHANNELS = 1;          // Моно
+    private static final int FRAME_SIZE = 2;        // байт на сэмпл (16 бит)
     private static final boolean SIGNED = true;
     private static final boolean BIG_ENDIAN = false;
 
 
-    // Генерация и запись тона с fade in/out (безопасная версия)
+    // Генерация и запись тона с fade in/out
     public static void writeTone(SourceDataLine line, double frequency, int durationMs) {
         if (durationMs <= 0) return;
 
@@ -31,7 +31,7 @@ public class AudioPlayer {
 
             double gain = 1.0;
             if (sampleCount <= 2) {
-                gain = 0.0; // слишком короткий сигнал — лучше не проигрывать
+                gain = 0.0;                 // слишком короткий сигнал — лучше не проигрывать
             } else if (i < fadeSamples) {
                 gain = (double) i / fadeSamples;
             } else if (i >= sampleCount - fadeSamples) {
@@ -46,7 +46,7 @@ public class AudioPlayer {
         line.write(buffer, 0, buffer.length);
     }
 
-    // Запись тишины
+    // Проиграть тишину
     public static void writeSilence(SourceDataLine line, int durationMs) {
         if (durationMs <= 0) return;
         int sampleCount = (int) ((SAMPLE_RATE * durationMs) / 1000.0);
